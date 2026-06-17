@@ -34,6 +34,11 @@ interface keccak_if #(
         input result
     );
 
+    modport consumer ( // SPI controller can read results (but not manage controls)
+        input clk,
+        input result
+    );
+
     modport core (
         input clk,
         input mode,
