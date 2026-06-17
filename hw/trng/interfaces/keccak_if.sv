@@ -4,13 +4,13 @@ import fips202::mode_t;
 
 interface keccak_if #(
     parameter MAX_R = 1344, // Maximum rate (1344 to support all FIPS202 modes)
-    parameter MAX_D = 512   // Maximum digest lenth (512 to support all FIPS202 modes)
+    parameter MAX_D = 512   // Maximum digest length (512 to support all FIPS202 modes)
 ) (
     input clk
 );
     localparam int unsigned MESSAGE_BYTES = MAX_R / 8;
     initial begin: assert_MAX_R_byte_aligned
-        assert (MAX_R % 8 == 0) else $error("keccak_if: MAX_R (%0d) must by byte-aligned", MAX_R);
+        assert (MAX_R % 8 == 0) else $error("keccak_if: MAX_R (%0d) must be byte-aligned", MAX_R);
     end
 
     fips202::mode_t           mode;           // FIPS202 mode (SHAKE128, SHA3-256, etc.)
