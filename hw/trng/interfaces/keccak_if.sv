@@ -13,12 +13,12 @@ interface keccak_if #(
         assert (MAX_R % 8 == 0) else $error("keccak_if: MAX_R (%0d) must be byte-aligned", MAX_R);
     end
 
-    fips202::mode_t           mode;           // FIPS202 mode (SHAKE128, SHA3-256, etc.)
-    logic                     enable;
-    logic                     reset;
-    logic         [MAX_R-1:0] message_chunk;  // Raw message data
-    logic [MESSAGE_BYTES-1:0] message_len;    // How many message bytes are valid (for padding)
-    logic         [MAX_D-1:0] result;         // Keccak output
+    fips202::mode_t                     mode;           // FIPS202 mode (SHAKE128, SHA3-256, etc.)
+    logic                               enable;
+    logic                               reset;
+    logic                   [MAX_R-1:0] message_chunk;  // Raw message data
+    logic [$clog2(MESSAGE_BYTES+1)-1:0] message_len;    // How many message bytes are valid (for padding)
+    logic                   [MAX_D-1:0] result;         // Keccak output
 
     modport source ( // entropy source supplies bits and lets us know how long the message is
         input clk,
