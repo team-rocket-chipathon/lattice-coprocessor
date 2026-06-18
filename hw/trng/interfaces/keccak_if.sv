@@ -16,9 +16,11 @@ interface keccak_if #(
     fips202::mode_t                     mode;           // FIPS202 mode (SHAKE128, SHA3-256, etc.)
     logic                               enable;
     logic                               reset;
+    logic                               ready;          // If asserted, consumer is ready for result
     logic                   [MAX_R-1:0] message_chunk;  // Raw message data
     logic [$clog2(MESSAGE_BYTES+1)-1:0] message_len;    // How many message bytes are valid (for padding)
     logic                   [MAX_D-1:0] result;         // Keccak output
+    logic                               valid;          // If asserted, result is valid
 
     modport source ( // entropy source supplies bits and lets us know how long the message is
         input clk,
@@ -31,22 +33,27 @@ interface keccak_if #(
         output mode,
         output enable,
         output reset,
-        input result
+        input result,
+        input valid
     );
 
     modport consumer ( // SPI controller can read results (but not manage controls)
         input clk,
-        input result
+        output ready,
+        input result,
+        input valid
     );
 
     modport core (
         input clk,
         input mode,
         input enable,
+        input ready,
         input reset,
         input message_chunk,
         input message_len,
-        output result
+        output result,
+        output valid
     );
 
 endinterface
