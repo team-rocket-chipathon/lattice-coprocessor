@@ -16,7 +16,7 @@ interface spi_if;
 
     modport subordinate (
         input   sclk,
-        input   cs_in,
+        input   cs_n,
         input   mosi,
         output  miso
     );
