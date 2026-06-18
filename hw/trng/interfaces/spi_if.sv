@@ -2,21 +2,21 @@
 // to offload SHAKE-128 results and health monitor status.
 
 interface spi_if;
-    logic clk;
-    logic select;
-    logic mosi;
-    logic miso;
+    logic sclk; // SPI clock
+    logic cs_n; // chip select (active-low)
+    logic mosi; // main-out-subordinate-in
+    logic miso; // main-in-subordinate-out
 
     modport main (
-        input   clk,
-        output  select,
+        input   sclk,
+        output  cs_n,
         output  mosi,
         input   miso
     );
 
     modport subordinate (
-        input   clk,
-        input   select,
+        input   sclk,
+        input   cs_in,
         input   mosi,
         output  miso
     );
