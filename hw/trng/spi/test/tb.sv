@@ -21,7 +21,7 @@ module tb ();
 
     // SPI wire bundle; master side driven from the stimulus above
     spi_if spi ();
-    assign spi.clk  = sclk;
+    assign spi.sclk = sclk;
     assign spi.cs_n = ncs;
     assign spi.mosi = mosi;
     assign miso     = spi.miso;

@@ -2,7 +2,7 @@
 
 **Issue:** #11 Design register-mapped SPI controller
 **Owner:** Sarkar
-**Status:** 🟡 PROPOSAL — needs sign-off from @infinitymdm (keccak) and @rahulearn2019 (health)
+**Status:** PROPOSAL — needs sign-off from @infinitymdm (keccak) and @rahulearn2019 (health)
 
 This document is the *contract* for the SPI block. It defines every wire that
 crosses the block boundary so the SPI RTL can be written and tested against

@@ -31,7 +31,7 @@ module spi_subordinate #(
     input  wire        rst_n,
 
     // SPI wires as an interface bundle (asynchronous, from off-chip master).
-    // Members: spi.clk (SCLK), spi.cs_n (active-low select), spi.mosi, spi.miso.
+    // Members: spi.sclk (SPI clock), spi.cs_n (active-low select), spi.mosi, spi.miso.
     spi_if.subordinate spi,
 
     // Data plane: random bytes from keccak FIFO (Marcus)
@@ -79,7 +79,7 @@ module spi_subordinate #(
             ncs_sync2  <= ncs_sync1;
             mosi_sync1 <= spi.mosi;
             mosi_sync2 <= mosi_sync1;
-            sclk_sync1 <= spi.clk;
+            sclk_sync1 <= spi.sclk;
             sclk_sync2 <= sclk_sync1;
             sclk_sync3 <= sclk_sync2;
         end
