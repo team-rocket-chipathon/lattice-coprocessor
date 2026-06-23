@@ -16,16 +16,16 @@ interface keccak_if #(
     fips202::mode_t                     mode;           // FIPS202 mode (SHAKE128, SHA3-256, etc.)
     logic                               enable;
     logic                               reset;
-    logic                               ready;          // If asserted, consumer is ready for result
+    logic                               ready;          // Consumer can accept `result` this cycle
     logic                   [MAX_R-1:0] message_chunk;  // Raw message data
     logic [$clog2(MESSAGE_BYTES+1)-1:0] message_len;    // How many message bytes are valid (for padding)
     logic                   [MAX_D-1:0] result;         // Keccak output
-    logic                               valid;          // If asserted, result is valid
+    logic                               valid;          // Core has a result available
 
     modport source ( // entropy source supplies bits and lets us know how long the message is
         input clk,
         output message_chunk,   // For TRNG, only drive the lower 512 bits. The rest will be padded
-        output message_len      // For TRNG, this can be fixed to uint 64 (indicating 512 bits)
+        output message_len      // For TRNG, this can be fixed to 'd64 (indicating 512 bits)
     );
 
     modport monitor ( // health monitor observes keccak output and manages control signals
@@ -34,14 +34,14 @@ interface keccak_if #(
         output enable,  // Assert when input message is ready at source modport
         output reset,   // Clear results & reset round count. Assert when changing mode
         input result,
-        input valid     // Core asserts when round counter indicates completed hash / SHAKE
+        input valid     // Core asserts valid when round counter indicates completed hash / SHAKE
     );
 
     modport consumer ( // SPI controller can read results (but not manage controls)
         input clk,
-        output ready,   // Halts the keccak core if deasserted. Useful when reading results to SPI
+        output ready,   // Halts the keccak core if deasserted. Transfer occurs on `valid && ready`
         input result,
-        input valid     // Core asserts when round counter indicates completed hash / SHAKE
+        input valid     // While `valid && !ready`, `result` must remain stable
     );
 
     modport core (
