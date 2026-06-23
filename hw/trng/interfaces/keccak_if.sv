@@ -3,8 +3,8 @@
 import fips202::mode_t;
 
 interface keccak_if #(
-    parameter MAX_R = 1344, // Maximum rate (1344 to support all FIPS202 modes)
-    parameter MAX_D = 512   // Maximum digest length (512 to support all FIPS202 modes)
+    parameter MAX_R = 512,  // Max input size. NOTE: MAX_R < 1344 implies all messages are 1 chunk
+    parameter MAX_D = 512   // Max output size. (512 to support all FIPS202 modes)
 ) (
     input clk
 );
@@ -24,24 +24,24 @@ interface keccak_if #(
 
     modport source ( // entropy source supplies bits and lets us know how long the message is
         input clk,
-        output message_chunk,
-        output message_len
+        output message_chunk,   // For TRNG, only drive the lower 512 bits. The rest will be padded
+        output message_len      // For TRNG, this can be fixed to uint 64 (indicating 512 bits)
     );
 
     modport monitor ( // health monitor observes keccak output and manages control signals
         input clk,
-        output mode,
-        output enable,
-        output reset,
+        output mode,    // Control whether operating in FIPS202 SHA3-512 or SHAKE-256 mode
+        output enable,  // Assert when input message is ready at source modport
+        output reset,   // Clear results & reset round count. Assert when changing mode
         input result,
-        input valid
+        input valid     // Core asserts when round counter indicates completed hash / SHAKE
     );
 
     modport consumer ( // SPI controller can read results (but not manage controls)
         input clk,
-        output ready,
+        output ready,   // Halts the keccak core if deasserted. Useful when reading results to SPI
         input result,
-        input valid
+        input valid     // Core asserts when round counter indicates completed hash / SHAKE
     );
 
     modport core (
