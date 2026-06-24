@@ -1,11 +1,9 @@
-import fips202::mode_t;
+import fips202::*;
 
 module keccak_core (keccak_if.core keccak);
 
-    logic             enable;
-    logic      [10:0] r;
-    logic       [9:0] c, d;
-    logic    [1343:0] message_aligned;
+    logic             enable, xof;
+    logic       [7:0] r_bytes;
     logic    [1343:0] message_padded;
     logic    [1599:0] x, y, q;
     logic       [4:0] round;
@@ -20,24 +18,48 @@ module keccak_core (keccak_if.core keccak);
 
     always_comb begin: select_mode
         case (keccak.mode)
-            SHAKE128: {r, c, d} = {10'd1344,  9'd256, 9'd128};
-            SHAKE256: {r, c, d} = {10'd1088,  9'd512, 9'd256};
-            SHA3_224: {r, c, d} = {10'd1152,  9'd448, 9'd224};
-            SHA3_256: {r, c, d} = {10'd1088,  9'd512, 9'd256};
-            SHA3_384: {r, c, d} = { 10'd832,  9'd768, 9'd384};
-            SHA3_512: {r, c, d} = { 10'd576, 9'd1024, 9'd512};
-            default:  {r, c, d} = { 10'd576, 9'd1024, 9'd512};
+            SHAKE128: {r_bytes, xof} = {8'd168, 1'b1};
+            SHAKE256: {r_bytes, xof} = {8'd136, 1'b1};
+            SHA3_224: {r_bytes, xof} = {8'd144, 1'b0};
+            SHA3_256: {r_bytes, xof} = {8'd136, 1'b0};
+            SHA3_384: {r_bytes, xof} = {8'd104, 1'b0};
+            SHA3_512: {r_bytes, xof} = { 8'd72, 1'b0};
+            default:  {r_bytes, xof} = {8'd136, 1'b0}; // SHA3-256
         endcase
     end
 
     // Padding
-    // Shift valid message bytes left, then pad out to length r with the appropriate suffix.
-    // Bytes below 1344-r are set to zero.
-    // Result is stored in message_padded.
+    // - Left-align message bytes
+    // - Pad out to length r using multirate padding with the appropriate suffix
+    // - Bytes beyond r_bytes are filled in with zeros
     always_comb begin: padding
-        // TODO: iterate over message bytes (starting at message_len) and pad up to rate
+        for (int i = 0; i < 168; i++) begin: iterate_over_all_bytes
+            // Case 1: valid incoming message byte. Copy to message_padded.
+            // NOTE: Cases where message_len > $bits(message_chunk)/8 are considered user error
+            if (i < keccak.message_len) begin: copy_message_byte
+                message_padded[1343-8*i-:8] = keccak.message_chunk[$bits(keccak.message_chunk)-1-8*i-:8];
+            end
+
+            // Case 2: index within rate, but beyond message_len. Apply padding.
+            // NOTE: Cases where message_len > r_bytes are considered user error
+            else if (i < r_bytes) begin: pad_message
+                case ({i == keccak.message_len, i == r_bytes-1})
+                    2'b00: message_padded[1343-8*i-:8] = 8'h00;
+                    2'b01: message_padded[1343-8*i-:8] = 8'h80;
+                    2'b10: message_padded[1343-8*i-:8] = xof ? 8'h1f : 8'h06;
+                    2'b11: message_padded[1343-8*i-:8] = xof ? 8'h9F : 8'h86;
+                endcase
+            end
+
+            // Case 3: index beyond rate. Fill zeros.
+            else begin: fill_zeros
+                message_padded[1343-8*i-:8] = 8'h00;
+            end
+        end
     end
-    assign x = {message_padded ^ q[1599:256], q[255:0]};
+
+    // XOR message into inputs
+    assign x = {message_padded ^ q[1599-:1344], q[255:0]};
 
     // Round counter
     // - Controls which iota const is applied
@@ -58,7 +80,7 @@ module keccak_core (keccak_if.core keccak);
     end
 
     // Single instance of keccak round hardware reused each cycle
-    keccak_round (.x, .y, .rc(iota_consts[round]))
+    keccak_round k_round (.x, .y, .rc(iota_consts[round]));
 
     // State DFF to store each round's results
     dffre #(.width(1600)) state (
@@ -69,6 +91,8 @@ module keccak_core (keccak_if.core keccak);
         .q
     );
 
-    assign results = q[1599-:d];
+    // Always assign 512 bytes, even if fewer are valid
+    // It's up to the consumer of these bits to use the correct width
+    assign keccak.result = q[1599-:512];
 
 endmodule
