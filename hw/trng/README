@@ -1,0 +1,10 @@
+TRNG are prone to external vector attacks. The common external attack vectors include, temperature based, voltage based and frequency based attacks.
+The entropy source of our design is ring oscillator jitter based which relies on jitter accumulation for random 0s and 1s. 
+Jitter accumulates from white noise which depends on temperature. Another attack vector is underpowering which reduces jitter significantly.
+Hardware oscillators rely on tiny variations in timing (jitter) to produce random output. Lowering the voltage dramatically reduces this jitter.
+As the thermal noise drops below a critical threshold, multiple oscillators tend to synchronize or "lock" into a uniform, harmonic frequency,
+destroying the source of entropy.
+
+Secure TRNG design:
+a) To prevent underpowering attacks, we have designed an BGR-LDO pair that will provide stable voltage to the Entropy source logic.
+b) To prevent temperature based attacks we perform simulations with temeperature sweep and at different corners and include Online health tests.
