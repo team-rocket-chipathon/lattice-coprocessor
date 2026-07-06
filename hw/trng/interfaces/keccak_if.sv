@@ -40,6 +40,7 @@ interface keccak_if #(
     modport consumer ( // SPI controller can read results (but not manage controls)
         input clk,
         output ready,   // Halts the keccak core if deasserted. Transfer occurs on `valid && ready`
+        input mode,     // Use mode to tell which bits of result are valid
         input result,
         input valid     // While `valid && !ready`, `result` must remain stable
     );
