@@ -91,7 +91,7 @@ module keccak_core (keccak_if.core keccak);
         .q
     );
 
-    // Always assign 512 bytes, even if fewer are valid
+    // Always assign 512 bits, even if fewer are valid for the current mode
     // It's up to the consumer of these bits to use the correct width
     assign keccak.result = q[1599-:512];
 
