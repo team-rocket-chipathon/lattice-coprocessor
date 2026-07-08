@@ -87,7 +87,7 @@ module ring_osc #(
         // After NUM_RAW_BITS shifts, bit [0] holds the first collected bit and
         // bit [NUM_RAW_BITS-1] holds the most recent — oldest-first ordering.
         sample_cnt  <= sample_cnt + 1'b1;
-        sample_sreg <= {sample_sreg[NUM_RAW_BITS-2:0], cell_sum};
+        sample_sreg <= {cell_sum, sample_sreg[NUM_RAW_BITS-1:1]};
       end
     end
   end

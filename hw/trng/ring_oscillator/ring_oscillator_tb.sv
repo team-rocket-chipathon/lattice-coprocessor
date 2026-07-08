@@ -10,8 +10,8 @@ module ring_osc_tb;
   // Testbench Parameters (Generics)
   // -----------------------------------------------------------------------------------------
   parameter integer NUM_CELLS     = 3;    // number of ring-oscillator cells
-  parameter integer NUM_INV_START = 5;    // number of inverters in first cell (must be odd)
-  parameter integer NUM_RAW_BITS  = 64;   // number of XOR-ed raw bits per random sample byte
+  parameter integer NUM_INV_START = 3;    // number of inverters in first cell (must be odd)
+  parameter integer NUM_RAW_BITS  = 512;   // number of XOR-ed raw bits per random sample byte
 
   // -----------------------------------------------------------------------------------------
   // Signal Generators / Interconnects
@@ -21,7 +21,7 @@ module ring_osc_tb;
   reg        en_gen   = 1'b0;
 
   wire       rnd_valid;
-  wire [7:0] rnd_data;
+  wire [NUM_RAW_BITS-1:0] rnd_data;
 
   // -----------------------------------------------------------------------------------------
   // Clock Generator (100MHz / 20ns period -> toggles every 10ns)
