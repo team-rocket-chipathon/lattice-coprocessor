@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# iverilog compiled output
+apt_sim
+
+# VCD waveform dump
+*.vcd
